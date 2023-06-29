@@ -6,18 +6,22 @@ const db = mysql.createConnection(
     {
         host: 'localhost',
         user: 'root',
-        password: 'root',
+        password: 'Freshly1!',
         database: 'job_db'
     },
+);
+db.connect(err => {
+    if (err) throw err;
     console.log(`Connected to the employee database.`)
-);
-db.query (
-    'SELECT * FROM employee', 
-    function(err, results, fields) {
-        console.log(results);
-        console.log(fields);
-    }
-);
+    init();
+})
+// db.query (
+//     'SELECT * FROM employee', 
+//     function(err, results, fields) {
+//         console.log(results);
+//         console.log(fields);
+//     }
+// );
 // init funtion to start the app on 'node server.js'
 
 const init = () => {
@@ -93,7 +97,7 @@ viewAllEmployees = () => {
 addEmployee = () => {
     let roleChoices = [];
     let rolesData = [];
-    db.query('SELECT * FROM role', (err, rows) => {
+    db.query('SELECT * FROM roles', (err, rows) => {
         if (err) throw err;
         rolesData = rows;
         rolesData.forEach((role) => {
@@ -103,7 +107,7 @@ addEmployee = () => {
     );
     let employeeChoices = [];
     let employeesData = [];
-    db.query('SELECT * FROM employee', (err, rows) => {
+    db.query('SELECT * FROM employees', (err, rows) => {
         if (err) throw err;
         employeesData = rows;
         employeesData.forEach((employee) => {
@@ -136,7 +140,7 @@ addEmployee = () => {
         }
     ])
     .then((userInput) => {
-        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)` + `VALUES (?, ?, ?, ?)`;
+        const sql = `INSERT INTO employees (first_name, last_name, roles_id, manager_id) VALUES (?, ?, ?, ?)`;
         const rolesTitle = userInput.role;
         const managerName = userInput.manager;
         let roleID;
@@ -168,7 +172,7 @@ addEmployee = () => {
 updateEmployeeRole = () => {
     let employeeChoices = [];
     let employeesData = [];
-    db.promise().query('SELECT * FROM employee')
+    db.promise().query('SELECT * FROM employees')
     .then(([rows,]) => {
         employeesData = rows;
         rows.map((row) => {
@@ -178,7 +182,7 @@ updateEmployeeRole = () => {
     .then(() => {
         let roleChoices = [];
         let rolesData = [];
-        db.promise().query('SELECT * FROM role')
+        db.promise().query('SELECT * FROM roles')
         .then(([rows,]) => {
             rolesData = rows;
             rows.map((row) => {
@@ -201,7 +205,7 @@ updateEmployeeRole = () => {
                 }
             ])
             .then((userInput) => {
-                const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+                const sql = `UPDATE employees SET role_id = ? WHERE id = ?`;
                 const rolesTitle = userInput.role;
                 const employeeName = userInput.employee;
                 let roleID;
@@ -232,9 +236,9 @@ updateEmployeeRole = () => {
 // view all roles in the job_db
 
 viewAllRoles = () => {
-    const sql = `SELECT role.id, role.title, department.name AS department, role.salary
-    FROM role
-    LEFT JOIN department ON role.department_id = department.id;`;
+    const sql = `SELECT roles.id, roles.title, departments.department_name AS department, roles.salary
+    FROM roles
+    LEFT JOIN departments ON roles.departments_id = departments.id;`;
 
     db.query(sql, (err, rows) => {
         console.log('err');
@@ -249,11 +253,11 @@ viewAllRoles = () => {
 addRole = () => {
     let departmentChoices = [];
     let departmentsData = [];
-    db.promise().query('SELECT * FROM department')
+    db.promise().query('SELECT * FROM departments')
     .then(([rows,]) => {
         departmentsData = rows;
         rows.map((row) => {
-        departmentChoices.push(row.name);
+        departmentChoices.push(row.department_name);
         });
     })
     .then(() => {
@@ -276,11 +280,11 @@ addRole = () => {
             }
         ])
         .then((userInput) => {
-            const sql = `INSERT INTO role (title, salary, department_id)` + `VALUES (?, ?, ?)`;
+            const sql = `INSERT INTO roles (title, salary, departments_id) VALUES (?, ?, ?)`;
             const departmentName = userInput.department;
             let departmentID;
             departmentsData.forEach((department) => {
-                if (department.name === departmentName) {
+                if (department.department_name === departmentName) {
                     departmentID = department.id;
                 }
             }
@@ -298,7 +302,7 @@ addRole = () => {
 // view all departments in the job_db
 
 viewAllDepartments = () => {
-    const sql = `SELECT * FROM department`;
+    const sql = `SELECT * FROM departments`;
 
     db.query(sql, (err, rows) => {
         console.log('err');
@@ -318,8 +322,8 @@ addDepartment = () => {
         }
     ])
     .then((userInput) => {
-        const sql = `INSERT INTO department (name)` + `VALUES (?)`;
-        const params = [userInput.name];
+        const sql = `INSERT INTO departments (department_name) VALUES (?)`;
+        const params = userInput.name;
         db.promise().query(sql, params)
         .then(() => {
             console.log('Department added successfully!');
@@ -328,7 +332,7 @@ addDepartment = () => {
     });
 };  
 
-init();
+
 
 
 
